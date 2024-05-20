@@ -1,1 +1,2 @@
-.data
+# ignore train data
+data/
