@@ -1,0 +1,314 @@
+Fri May 31 17:30:37 2024       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 465.19.01    Driver Version: 465.19.01    CUDA Version: 11.3     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA A40          On   | 00000000:50:00.0 Off |                    0 |
+|  0%   28C    P8    28W / 300W |      0MiB / 45634MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+Using device: cuda:0
+Files already downloaded and verified
+Training Set:
+image size per batch torch.Size([128, 3, 224, 224])
+label size per batch torch.Size([128])
+Testing Set:
+image size per batch torch.Size([128, 3, 224, 224])
+label size per batch torch.Size([128])
+Epoch: 001/025 | Batch 0000/0313 | Loss: 2.3017
+Epoch: 001/025 | Batch 0050/0313 | Loss: 2.0209
+Epoch: 001/025 | Batch 0100/0313 | Loss: 1.7412
+Epoch: 001/025 | Batch 0150/0313 | Loss: 1.4886
+Epoch: 001/025 | Batch 0200/0313 | Loss: 1.6830
+Epoch: 001/025 | Batch 0250/0313 | Loss: 1.4265
+Epoch: 001/025 | Batch 0300/0313 | Loss: 1.3529
+#Epoch: 001/025 | Train. Acc.: 51.138% | Loss: 1.330
+#Epoch: 001/025 | Valid. Acc.: 50.280% | Loss: 1.345
+#Validation loss decreased (inf --> 1.344877). Saving model ...
+Time elapsed: 1.43 min
+Epoch: 002/025 | Batch 0000/0313 | Loss: 1.3427
+Epoch: 002/025 | Batch 0050/0313 | Loss: 1.1624
+Epoch: 002/025 | Batch 0100/0313 | Loss: 1.3063
+Epoch: 002/025 | Batch 0150/0313 | Loss: 1.3578
+Epoch: 002/025 | Batch 0200/0313 | Loss: 1.2141
+Epoch: 002/025 | Batch 0250/0313 | Loss: 1.1788
+Epoch: 002/025 | Batch 0300/0313 | Loss: 1.3348
+#Epoch: 002/025 | Train. Acc.: 59.340% | Loss: 1.137
+#Epoch: 002/025 | Valid. Acc.: 57.450% | Loss: 1.175
+#Validation loss decreased (1.344877 --> 1.175130). Saving model ...
+Time elapsed: 2.71 min
+Epoch: 003/025 | Batch 0000/0313 | Loss: 1.1454
+Epoch: 003/025 | Batch 0050/0313 | Loss: 1.2068
+Epoch: 003/025 | Batch 0100/0313 | Loss: 0.9958
+Epoch: 003/025 | Batch 0150/0313 | Loss: 0.9236
+Epoch: 003/025 | Batch 0200/0313 | Loss: 1.0775
+Epoch: 003/025 | Batch 0250/0313 | Loss: 1.0687
+Epoch: 003/025 | Batch 0300/0313 | Loss: 1.0100
+#Epoch: 003/025 | Train. Acc.: 66.250% | Loss: 0.947
+#Epoch: 003/025 | Valid. Acc.: 63.890% | Loss: 1.003
+#Validation loss decreased (1.175130 --> 1.002873). Saving model ...
+Time elapsed: 3.99 min
+Epoch: 004/025 | Batch 0000/0313 | Loss: 0.9727
+Epoch: 004/025 | Batch 0050/0313 | Loss: 1.0347
+Epoch: 004/025 | Batch 0100/0313 | Loss: 0.9484
+Epoch: 004/025 | Batch 0150/0313 | Loss: 1.0707
+Epoch: 004/025 | Batch 0200/0313 | Loss: 0.9105
+Epoch: 004/025 | Batch 0250/0313 | Loss: 0.7953
+Epoch: 004/025 | Batch 0300/0313 | Loss: 0.7373
+#Epoch: 004/025 | Train. Acc.: 70.993% | Loss: 0.827
+#Epoch: 004/025 | Valid. Acc.: 68.020% | Loss: 0.902
+#Validation loss decreased (1.002873 --> 0.901523). Saving model ...
+Time elapsed: 5.27 min
+Epoch: 005/025 | Batch 0000/0313 | Loss: 0.8581
+Epoch: 005/025 | Batch 0050/0313 | Loss: 0.8079
+Epoch: 005/025 | Batch 0100/0313 | Loss: 0.7623
+Epoch: 005/025 | Batch 0150/0313 | Loss: 0.7906
+Epoch: 005/025 | Batch 0200/0313 | Loss: 0.7247
+Epoch: 005/025 | Batch 0250/0313 | Loss: 0.7969
+Epoch: 005/025 | Batch 0300/0313 | Loss: 0.7877
+#Epoch: 005/025 | Train. Acc.: 75.078% | Loss: 0.711
+#Epoch: 005/025 | Valid. Acc.: 71.060% | Loss: 0.812
+#Validation loss decreased (0.901523 --> 0.812410). Saving model ...
+Time elapsed: 6.54 min
+Epoch: 006/025 | Batch 0000/0313 | Loss: 0.8930
+Epoch: 006/025 | Batch 0050/0313 | Loss: 0.8136
+Epoch: 006/025 | Batch 0100/0313 | Loss: 0.7832
+Epoch: 006/025 | Batch 0150/0313 | Loss: 0.8659
+Epoch: 006/025 | Batch 0200/0313 | Loss: 0.6879
+Epoch: 006/025 | Batch 0250/0313 | Loss: 0.7588
+Epoch: 006/025 | Batch 0300/0313 | Loss: 0.7617
+#Epoch: 006/025 | Train. Acc.: 78.088% | Loss: 0.633
+#Epoch: 006/025 | Valid. Acc.: 73.800% | Loss: 0.762
+#Validation loss decreased (0.812410 --> 0.761980). Saving model ...
+Time elapsed: 7.82 min
+Epoch: 007/025 | Batch 0000/0313 | Loss: 0.7081
+Epoch: 007/025 | Batch 0050/0313 | Loss: 0.6752
+Epoch: 007/025 | Batch 0100/0313 | Loss: 0.7105
+Epoch: 007/025 | Batch 0150/0313 | Loss: 0.7229
+Epoch: 007/025 | Batch 0200/0313 | Loss: 0.5458
+Epoch: 007/025 | Batch 0250/0313 | Loss: 0.6191
+Epoch: 007/025 | Batch 0300/0313 | Loss: 0.7488
+#Epoch: 007/025 | Train. Acc.: 82.013% | Loss: 0.538
+#Epoch: 007/025 | Valid. Acc.: 75.900% | Loss: 0.696
+#Validation loss decreased (0.761980 --> 0.695666). Saving model ...
+Time elapsed: 9.09 min
+Epoch: 008/025 | Batch 0000/0313 | Loss: 0.6744
+Epoch: 008/025 | Batch 0050/0313 | Loss: 0.7209
+Epoch: 008/025 | Batch 0100/0313 | Loss: 0.6444
+Epoch: 008/025 | Batch 0150/0313 | Loss: 0.7661
+Epoch: 008/025 | Batch 0200/0313 | Loss: 0.8161
+Epoch: 008/025 | Batch 0250/0313 | Loss: 0.5681
+Epoch: 008/025 | Batch 0300/0313 | Loss: 0.7032
+#Epoch: 008/025 | Train. Acc.: 82.980% | Loss: 0.493
+#Epoch: 008/025 | Valid. Acc.: 75.930% | Loss: 0.700
+Time elapsed: 10.36 min
+Epoch: 009/025 | Batch 0000/0313 | Loss: 0.4944
+Epoch: 009/025 | Batch 0050/0313 | Loss: 0.5440
+Epoch: 009/025 | Batch 0100/0313 | Loss: 0.6446
+Epoch: 009/025 | Batch 0150/0313 | Loss: 0.6395
+Epoch: 009/025 | Batch 0200/0313 | Loss: 0.4281
+Epoch: 009/025 | Batch 0250/0313 | Loss: 0.5918
+Epoch: 009/025 | Batch 0300/0313 | Loss: 0.6320
+#Epoch: 009/025 | Train. Acc.: 86.615% | Loss: 0.397
+#Epoch: 009/025 | Valid. Acc.: 77.550% | Loss: 0.649
+#Validation loss decreased (0.695666 --> 0.648682). Saving model ...
+Time elapsed: 11.64 min
+Epoch: 010/025 | Batch 0000/0313 | Loss: 0.4882
+Epoch: 010/025 | Batch 0050/0313 | Loss: 0.4429
+Epoch: 010/025 | Batch 0100/0313 | Loss: 0.3756
+Epoch: 010/025 | Batch 0150/0313 | Loss: 0.4554
+Epoch: 010/025 | Batch 0200/0313 | Loss: 0.5100
+Epoch: 010/025 | Batch 0250/0313 | Loss: 0.4700
+Epoch: 010/025 | Batch 0300/0313 | Loss: 0.6486
+#Epoch: 010/025 | Train. Acc.: 88.060% | Loss: 0.362
+#Epoch: 010/025 | Valid. Acc.: 77.330% | Loss: 0.646
+#Validation loss decreased (0.648682 --> 0.646485). Saving model ...
+Time elapsed: 12.91 min
+Epoch: 011/025 | Batch 0000/0313 | Loss: 0.4510
+Epoch: 011/025 | Batch 0050/0313 | Loss: 0.4270
+Epoch: 011/025 | Batch 0100/0313 | Loss: 0.5027
+Epoch: 011/025 | Batch 0150/0313 | Loss: 0.4213
+Epoch: 011/025 | Batch 0200/0313 | Loss: 0.4770
+Epoch: 011/025 | Batch 0250/0313 | Loss: 0.4823
+Epoch: 011/025 | Batch 0300/0313 | Loss: 0.3968
+#Epoch: 011/025 | Train. Acc.: 89.110% | Loss: 0.317
+#Epoch: 011/025 | Valid. Acc.: 77.500% | Loss: 0.666
+Time elapsed: 14.18 min
+Epoch: 012/025 | Batch 0000/0313 | Loss: 0.4277
+Epoch: 012/025 | Batch 0050/0313 | Loss: 0.3068
+Epoch: 012/025 | Batch 0100/0313 | Loss: 0.4946
+Epoch: 012/025 | Batch 0150/0313 | Loss: 0.4692
+Epoch: 012/025 | Batch 0200/0313 | Loss: 0.4198
+Epoch: 012/025 | Batch 0250/0313 | Loss: 0.2767
+Epoch: 012/025 | Batch 0300/0313 | Loss: 0.4829
+#Epoch: 012/025 | Train. Acc.: 93.137% | Loss: 0.233
+#Epoch: 012/025 | Valid. Acc.: 79.320% | Loss: 0.603
+#Validation loss decreased (0.646485 --> 0.603430). Saving model ...
+Time elapsed: 15.46 min
+Epoch: 013/025 | Batch 0000/0313 | Loss: 0.2529
+Epoch: 013/025 | Batch 0050/0313 | Loss: 0.2869
+Epoch: 013/025 | Batch 0100/0313 | Loss: 0.2581
+Epoch: 013/025 | Batch 0150/0313 | Loss: 0.3630
+Epoch: 013/025 | Batch 0200/0313 | Loss: 0.2749
+Epoch: 013/025 | Batch 0250/0313 | Loss: 0.4173
+Epoch: 013/025 | Batch 0300/0313 | Loss: 0.3402
+#Epoch: 013/025 | Train. Acc.: 95.502% | Loss: 0.158
+#Epoch: 013/025 | Valid. Acc.: 80.070% | Loss: 0.607
+Time elapsed: 16.73 min
+Epoch: 014/025 | Batch 0000/0313 | Loss: 0.3184
+Epoch: 014/025 | Batch 0050/0313 | Loss: 0.1766
+Epoch: 014/025 | Batch 0100/0313 | Loss: 0.4042
+Epoch: 014/025 | Batch 0150/0313 | Loss: 0.2446
+Epoch: 014/025 | Batch 0200/0313 | Loss: 0.1919
+Epoch: 014/025 | Batch 0250/0313 | Loss: 0.2405
+Epoch: 014/025 | Batch 0300/0313 | Loss: 0.2816
+#Epoch: 014/025 | Train. Acc.: 96.730% | Loss: 0.140
+#Epoch: 014/025 | Valid. Acc.: 80.650% | Loss: 0.594
+#Validation loss decreased (0.603430 --> 0.593804). Saving model ...
+Time elapsed: 18.10 min
+Epoch: 015/025 | Batch 0000/0313 | Loss: 0.2748
+Epoch: 015/025 | Batch 0050/0313 | Loss: 0.1685
+Epoch: 015/025 | Batch 0100/0313 | Loss: 0.3303
+Epoch: 015/025 | Batch 0150/0313 | Loss: 0.2216
+Epoch: 015/025 | Batch 0200/0313 | Loss: 0.1645
+Epoch: 015/025 | Batch 0250/0313 | Loss: 0.1727
+Epoch: 015/025 | Batch 0300/0313 | Loss: 0.3693
+#Epoch: 015/025 | Train. Acc.: 97.703% | Loss: 0.095
+#Epoch: 015/025 | Valid. Acc.: 80.690% | Loss: 0.634
+Time elapsed: 19.39 min
+Epoch: 016/025 | Batch 0000/0313 | Loss: 0.2093
+Epoch: 016/025 | Batch 0050/0313 | Loss: 0.1749
+Epoch: 016/025 | Batch 0100/0313 | Loss: 0.2377
+Epoch: 016/025 | Batch 0150/0313 | Loss: 0.1503
+Epoch: 016/025 | Batch 0200/0313 | Loss: 0.1211
+Epoch: 016/025 | Batch 0250/0313 | Loss: 0.2467
+Epoch: 016/025 | Batch 0300/0313 | Loss: 0.2200
+#Epoch: 016/025 | Train. Acc.: 98.070% | Loss: 0.079
+#Epoch: 016/025 | Valid. Acc.: 80.900% | Loss: 0.652
+Time elapsed: 20.64 min
+Epoch: 017/025 | Batch 0000/0313 | Loss: 0.1996
+Epoch: 017/025 | Batch 0050/0313 | Loss: 0.1311
+Epoch: 017/025 | Batch 0100/0313 | Loss: 0.1191
+Epoch: 017/025 | Batch 0150/0313 | Loss: 0.2163
+Epoch: 017/025 | Batch 0200/0313 | Loss: 0.1825
+Epoch: 017/025 | Batch 0250/0313 | Loss: 0.1524
+Epoch: 017/025 | Batch 0300/0313 | Loss: 0.2047
+#Epoch: 017/025 | Train. Acc.: 99.272% | Loss: 0.047
+#Epoch: 017/025 | Valid. Acc.: 81.710% | Loss: 0.627
+Time elapsed: 21.89 min
+Epoch: 018/025 | Batch 0000/0313 | Loss: 0.0968
+Epoch: 018/025 | Batch 0050/0313 | Loss: 0.1828
+Epoch: 018/025 | Batch 0100/0313 | Loss: 0.1312
+Epoch: 018/025 | Batch 0150/0313 | Loss: 0.1753
+Epoch: 018/025 | Batch 0200/0313 | Loss: 0.2779
+Epoch: 018/025 | Batch 0250/0313 | Loss: 0.1252
+Epoch: 018/025 | Batch 0300/0313 | Loss: 0.1408
+#Epoch: 018/025 | Train. Acc.: 99.472% | Loss: 0.036
+#Epoch: 018/025 | Valid. Acc.: 80.980% | Loss: 0.665
+Time elapsed: 23.15 min
+Epoch: 019/025 | Batch 0000/0313 | Loss: 0.0982
+Epoch: 019/025 | Batch 0050/0313 | Loss: 0.0837
+Epoch: 019/025 | Batch 0100/0313 | Loss: 0.0618
+Epoch: 019/025 | Batch 0150/0313 | Loss: 0.1355
+Epoch: 019/025 | Batch 0200/0313 | Loss: 0.1114
+Epoch: 019/025 | Batch 0250/0313 | Loss: 0.1032
+Epoch: 019/025 | Batch 0300/0313 | Loss: 0.1260
+#Epoch: 019/025 | Train. Acc.: 99.407% | Loss: 0.029
+#Epoch: 019/025 | Valid. Acc.: 81.060% | Loss: 0.712
+Time elapsed: 24.40 min
+Epoch: 020/025 | Batch 0000/0313 | Loss: 0.0996
+Epoch: 020/025 | Batch 0050/0313 | Loss: 0.1161
+Epoch: 020/025 | Batch 0100/0313 | Loss: 0.1309
+Epoch: 020/025 | Batch 0150/0313 | Loss: 0.1862
+Epoch: 020/025 | Batch 0200/0313 | Loss: 0.1636
+Epoch: 020/025 | Batch 0250/0313 | Loss: 0.1311
+Epoch: 020/025 | Batch 0300/0313 | Loss: 0.1208
+#Epoch: 020/025 | Train. Acc.: 99.505% | Loss: 0.033
+#Epoch: 020/025 | Valid. Acc.: 80.760% | Loss: 0.678
+Time elapsed: 25.65 min
+Epoch: 021/025 | Batch 0000/0313 | Loss: 0.1077
+Epoch: 021/025 | Batch 0050/0313 | Loss: 0.1287
+Epoch: 021/025 | Batch 0100/0313 | Loss: 0.0838
+Epoch: 021/025 | Batch 0150/0313 | Loss: 0.1266
+Epoch: 021/025 | Batch 0200/0313 | Loss: 0.1040
+Epoch: 021/025 | Batch 0250/0313 | Loss: 0.2142
+Epoch: 021/025 | Batch 0300/0313 | Loss: 0.0782
+#Epoch: 021/025 | Train. Acc.: 99.460% | Loss: 0.029
+#Epoch: 021/025 | Valid. Acc.: 81.020% | Loss: 0.735
+Time elapsed: 26.91 min
+Epoch: 022/025 | Batch 0000/0313 | Loss: 0.1289
+Epoch: 022/025 | Batch 0050/0313 | Loss: 0.1156
+Epoch: 022/025 | Batch 0100/0313 | Loss: 0.0876
+Epoch: 022/025 | Batch 0150/0313 | Loss: 0.0662
+Epoch: 022/025 | Batch 0200/0313 | Loss: 0.1825
+Epoch: 022/025 | Batch 0250/0313 | Loss: 0.0987
+Epoch: 022/025 | Batch 0300/0313 | Loss: 0.1517
+#Epoch: 022/025 | Train. Acc.: 99.760% | Loss: 0.019
+#Epoch: 022/025 | Valid. Acc.: 81.780% | Loss: 0.694
+Time elapsed: 28.17 min
+Epoch: 023/025 | Batch 0000/0313 | Loss: 0.0591
+Epoch: 023/025 | Batch 0050/0313 | Loss: 0.1310
+Epoch: 023/025 | Batch 0100/0313 | Loss: 0.1130
+Epoch: 023/025 | Batch 0150/0313 | Loss: 0.0936
+Epoch: 023/025 | Batch 0200/0313 | Loss: 0.0985
+Epoch: 023/025 | Batch 0250/0313 | Loss: 0.1245
+Epoch: 023/025 | Batch 0300/0313 | Loss: 0.0679
+#Epoch: 023/025 | Train. Acc.: 99.838% | Loss: 0.015
+#Epoch: 023/025 | Valid. Acc.: 81.610% | Loss: 0.703
+Time elapsed: 29.46 min
+Epoch: 024/025 | Batch 0000/0313 | Loss: 0.0391
+Epoch: 024/025 | Batch 0050/0313 | Loss: 0.1176
+Epoch: 024/025 | Batch 0100/0313 | Loss: 0.0350
+Epoch: 024/025 | Batch 0150/0313 | Loss: 0.0562
+Epoch: 024/025 | Batch 0200/0313 | Loss: 0.0510
+Epoch: 024/025 | Batch 0250/0313 | Loss: 0.1045
+Epoch: 024/025 | Batch 0300/0313 | Loss: 0.1263
+#Epoch: 024/025 | Train. Acc.: 99.795% | Loss: 0.013
+#Epoch: 024/025 | Valid. Acc.: 81.960% | Loss: 0.732
+Time elapsed: 30.74 min
+Epoch: 025/025 | Batch 0000/0313 | Loss: 0.0776
+Epoch: 025/025 | Batch 0050/0313 | Loss: 0.0786
+Epoch: 025/025 | Batch 0100/0313 | Loss: 0.0959
+Epoch: 025/025 | Batch 0150/0313 | Loss: 0.0654
+Epoch: 025/025 | Batch 0200/0313 | Loss: 0.0966
+Epoch: 025/025 | Batch 0250/0313 | Loss: 0.0617
+Epoch: 025/025 | Batch 0300/0313 | Loss: 0.1552
+#Epoch: 025/025 | Train. Acc.: 99.913% | Loss: 0.010
+#Epoch: 025/025 | Valid. Acc.: 81.740% | Loss: 0.733
+Time elapsed: 32.00 min
+Total Training Time: 32.00 min
+Test Loss: 0.6170
+
+Test Accuracy of Airplane: 82% (826/1000)
+Test Accuracy of      Car: 90% (907/1000)
+Test Accuracy of     Bird: 73% (734/1000)
+Test Accuracy of      Cat: 54% (543/1000)
+Test Accuracy of     Deer: 72% (727/1000)
+Test Accuracy of      Dog: 73% (734/1000)
+Test Accuracy of     Frog: 87% (874/1000)
+Test Accuracy of    Horse: 86% (868/1000)
+Test Accuracy of     Ship: 88% (881/1000)
+Test Accuracy of    Truck: 88% (882/1000)
+
+Test Accuracy (Overall): 79.76%
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
