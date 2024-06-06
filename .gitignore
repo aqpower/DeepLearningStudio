@@ -1,3 +1,6 @@
 # ignore train data
 data/
 data
+
+model_cifar.pt
+model_*.pt
