@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[46]:
 
 
 import time
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 # from torchinfo import summary
 
 import torch
@@ -21,8 +22,23 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
 
-# In[ ]:
+# In[47]:
 
+
+# 设置随机种子以确保结果可复现
+def set_random_seed(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+# 在每次训练前设置随机种子
+seed = 9  # 可以每次更改这个值
+set_random_seed(seed)
 
 # Mini-Batch Gradient Descent
 batch_size = 128
@@ -80,7 +96,7 @@ classes = (
 # ```
 # 
 
-# In[ ]:
+# In[48]:
 
 
 def conv3x3(in_channels, out_channels, stride=1):
@@ -197,7 +213,7 @@ print(out.shape)
 # ```
 # 
 
-# In[ ]:
+# In[49]:
 
 
 class Bottleneck(nn.Module):
@@ -279,7 +295,7 @@ class Bottleneck(nn.Module):
         return out
 
 
-# In[ ]:
+# In[50]:
 
 
 class ResNet(nn.Module):
@@ -312,10 +328,12 @@ class ResNet(nn.Module):
         """
         super(ResNet, self).__init__()
         self.in_channels = 64
-
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        # 考虑到CIFAR10数据集的图片尺寸太小，ResNet18网络的7x7降采样卷积和池化操作容易丢失一部分信息
+        # 所以在实验中我们将7x7的降采样层和最大池化层去掉，替换为一个3x3的降采样卷积，同时减小该卷积层的步长和填充大小，
+        # 这样可以尽可能保留原始图像的信息。
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
@@ -323,7 +341,11 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        # self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc = nn.Sequential(
+            nn.Dropout(0.5), nn.Linear(512 * block.expansion, num_classes)
+        )
+        self.dropout = nn.Dropout(p=0.5)
 
     def _make_layer(
         self, block: type[BasicBlock], out_channels: int, num_blocks: int, stride: int
@@ -358,7 +380,7 @@ class ResNet(nn.Module):
             Output tensor.
         """
         x = F.relu(self.bn1(self.conv1(x)))
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         x = self.layer1(x)
         x = self.layer2(x)
@@ -368,10 +390,11 @@ class ResNet(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
+        # x = self.dropout(x)
         return x
 
 
-# In[ ]:
+# In[51]:
 
 
 def ResNet18(num_classes: int = 10) -> ResNet:
@@ -386,10 +409,11 @@ def ResNet18(num_classes: int = 10) -> ResNet:
     """
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes)
 
+
 # summary(ResNet18(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[52]:
 
 
 def ResNet34(num_classes: int = 10) -> ResNet:
@@ -408,7 +432,7 @@ def ResNet34(num_classes: int = 10) -> ResNet:
 # summary(ResNet34(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[53]:
 
 
 def ResNet50(num_classes: int = 10) -> ResNet:
@@ -427,7 +451,7 @@ def ResNet50(num_classes: int = 10) -> ResNet:
 # summary(ResNet50(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[54]:
 
 
 def ResNet101(num_classes: int = 10) -> ResNet:
@@ -446,7 +470,7 @@ def ResNet101(num_classes: int = 10) -> ResNet:
 # summary(ResNet101(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[55]:
 
 
 def ResNet152(num_classes: int = 10) -> ResNet:
@@ -461,15 +485,33 @@ def ResNet152(num_classes: int = 10) -> ResNet:
     """
     return ResNet(Bottleneck, [3, 8, 36, 3], num_classes)
 
-
 # summary(ResNet152(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[56]:
 
 
-# 数据预处理
-transform = transforms.Compose(
+from cutout import Cutout
+
+# 数据增强变换
+transform_train = transforms.Compose(
+    [
+        transforms.RandomCrop(32, padding=4),  # 随机裁剪，填充4个像素
+        transforms.RandomHorizontalFlip(),  # 随机水平翻转
+        transforms.ColorJitter(
+            brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1
+        ),  # 颜色抖动
+        transforms.RandomRotation(15),  # 随机旋转
+        transforms.ToTensor(),  # 转为Tensor
+        transforms.Normalize(
+            (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
+        ),  # 归一化
+        Cutout(n_holes=1, length=16),
+    ]
+)
+
+# 验证集和测试集变换（不进行数据增强）
+transform_test = transforms.Compose(
     [
         transforms.ToTensor(),  # 转为Tensor
         transforms.Normalize(
@@ -478,33 +520,40 @@ transform = transforms.Compose(
     ]
 )
 
+# 将数据转换为torch.FloatTensor，并标准化。
+train_data = CIFAR10("../data", train=True, download=True, transform=transform_train)
+valid_data = CIFAR10("../data", train=True, download=True, transform=transform_test)
+test_data = CIFAR10("../data", train=False, download=True, transform=transform_test)
 
-train_data = CIFAR10(root="../data", train=True, download=True, transform=transform)
-test_data = CIFAR10(root="../data", train=False, transform=transform)
 
-# make indices for spliting the training dataset into training and validation
-len_train = len(train_data)
-indices = list(range(len_train))
+# obtain training indices that will be used for validation
+num_train = len(train_data)
+indices = list(range(num_train))
+# random indices
 np.random.shuffle(indices)
-split = int(np.floor(valid_percentage * len_train))
+# the ratio of split
+split = int(np.floor(valid_percentage * num_train))
+# divide data to radin_data and valid_data
 train_idx, valid_idx = indices[split:], indices[:split]
 
+# define samplers for obtaining training and validation batches
+# 无放回地按照给定的索引列表采样样本元素
 train_sampler = SubsetRandomSampler(train_idx)
 valid_sampler = SubsetRandomSampler(valid_idx)
 
-# we use mini-batch gradient descent to train the model
-train_loader = DataLoader(
+# prepare data loaders (combine dataset and sampler)
+train_loader = torch.utils.data.DataLoader(
     train_data, batch_size=batch_size, sampler=train_sampler, num_workers=2
 )
-
-valid_loader = DataLoader(
-    train_data, batch_size=batch_size, sampler=valid_sampler, num_workers=2
+valid_loader = torch.utils.data.DataLoader(
+    valid_data, batch_size=batch_size, sampler=valid_sampler, num_workers=2
+)
+test_loader = torch.utils.data.DataLoader(
+    test_data, batch_size=batch_size, num_workers=2
 )
 
-test_loader = DataLoader(test_data, batch_size=batch_size, num_workers=2)
 
-
-# In[ ]:
+# In[57]:
 
 
 # Checking the dataset size
@@ -521,7 +570,7 @@ check_dataset(valid_loader, "Valid")
 check_dataset(test_loader, "Testing")
 
 
-# In[ ]:
+# In[58]:
 
 
 def eval_model(model, data_loader):
@@ -564,7 +613,7 @@ def eval_model(model, data_loader):
     }
 
 
-# In[ ]:
+# In[59]:
 
 
 # train model
@@ -585,15 +634,15 @@ def train(
         "train_loss_per_epoch": [],
         "valid_loss_per_epoch": [],
         "valid_loss_min": np.Inf,
-        "learning_rates": [],  
+        "learning_rates": [],
         "model_name": model_name,
     }
     start_time = time.time()
     for epoch in range(num_epochs):
-        current_lr = optimizer.param_groups[0]['lr']
+        current_lr = optimizer.param_groups[0]["lr"]
         log_dict["learning_rates"].append(current_lr)
         print(
-            f"Epoch {epoch+1:03d}/{num_epochs:03d} | Current Learning Rate: {current_lr}"
+            f"Epoch: {epoch+1:03d}/{num_epochs:03d} | Current Learning Rate: {current_lr:.6f}"
         )
 
         model.train()
@@ -623,7 +672,7 @@ def train(
             train_acc = train_eval_res["accuracy"]
             train_loss = train_eval_res["avg_loss"]
             print(
-                f"#Epoch: {epoch+1:03d}/{num_epochs:03d} | Train. Acc.: {train_acc:.3f}% | Loss: {train_loss:.3f}"
+                f"**Epoch: {epoch+1:03d}/{num_epochs:03d} | Train. Acc.: {train_acc:.3f}% | Loss: {train_loss:.4f}"
             )
             log_dict["train_loss_per_epoch"].append(train_loss)
             log_dict["train_acc_per_epoch"].append(train_acc)
@@ -635,25 +684,26 @@ def train(
             log_dict["valid_loss_per_epoch"].append(valid_loss)
             log_dict["valid_acc_per_epoch"].append(valid_acc)
             print(
-                f"#Epoch: {epoch+1:03d}/{num_epochs:03d} | Valid. Acc.: {valid_acc:.3f}% | Loss: {valid_loss:.3f}"
+                f"**Epoch: {epoch+1:03d}/{num_epochs:03d} | Valid. Acc.: {valid_acc:.3f}% | Loss: {valid_loss:.4f}"
             )
             # * save the model if the validation loss is decreased
             if valid_loss <= log_dict["valid_loss_min"]:
                 print(
-                    f"#Validation loss decreased ({log_dict['valid_loss_min']:.6f} --> {valid_loss:.6f}). Saving model ..."
+                    f"**Validation loss decreased ({log_dict['valid_loss_min']:.6f} --> {valid_loss:.6f}). Saving model ..."
                 )
-                torch.save(model.state_dict(), "model_cifar.pt")
+                torch.save(model.state_dict(), f"{model_name}_cifar.pt")
                 log_dict["valid_loss_min"] = valid_loss
 
-        if(scheduler is not None):
-            scheduler.step()
+        if scheduler is not None:
+            # scheduler.step()
+            scheduler.step(valid_loss)
         print(f"Time elapsed: {(time.time() - start_time) / 60:.2f} min")
 
     print(f"Total Training Time: {(time.time() - start_time)/ 60:.2f} min")
     return log_dict
 
 
-# model = ResNet34(num_classes=10).to(device)
+# model = ResNet18(num_classes=10).to(device)
 
 # loss_fn = nn.CrossEntropyLoss()
 # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -666,7 +716,7 @@ def train(
 #     model,
 #     train_loader,
 #     valid_loader,
-#     num_epochs=num_epochs,
+#     num_epochs=20,
 #     optimizer=optimizer,
 #     loss_fn=loss_fn,
 #     scheduler=scheduler,
@@ -674,16 +724,16 @@ def train(
 # )
 
 
-# In[ ]:
+# In[60]:
 
 
 # model.load_state_dict(torch.load("model_cifar.pt"))
 
 
-# In[ ]:
+# In[61]:
 
 
-def plot_training_metrics(log_dict: dict):
+def plot_training_metrics(log_dict: dict, num_epochs: int):
     loss_list = log_dict["train_loss_per_batch"]
     train_acc = log_dict["train_acc_per_epoch"]
     valid_acc = log_dict["valid_acc_per_epoch"]
@@ -701,55 +751,60 @@ def plot_training_metrics(log_dict: dict):
     axs[0].plot(running_avg_loss, label="Running Average Loss", linewidth=2)
     axs[0].set_xlabel("Iteration")
     axs[0].set_ylabel("Cross Entropy Loss")
-    axs[0].set_title(f"Training Loss on {model_name}", fontsize=14, pad=15)
+    axs[0].set_title(f"Training Loss on {model_name}")
     axs[0].legend(loc="best")
     axs[0].grid(True)
     axs[0].set_yscale("log")
 
     # 标记学习率变化
-    iterations_per_epoch = len(loss_list) // num_epochs
-    for epoch, lr in enumerate(learning_rates):
-        if epoch == 0 or lr != learning_rates[epoch - 1]:
-            axs[0].axvline(
-                x=epoch * iterations_per_epoch, linestyle="--", color="gray", alpha=0.8
-            )
-            axs[0].text(
-                epoch * iterations_per_epoch + 200,
-                min(loss_list),
-                f"lr: {lr:.1e}",
-                rotation=0,
-                verticalalignment="bottom",
-            )
+    # iterations_per_epoch = len(loss_list) // num_epochs
+    # for epoch, lr in enumerate(learning_rates):
+    #     if epoch == 0 or lr != learning_rates[epoch - 1]:
+    #         axs[0].axvline(
+    #             x=epoch * iterations_per_epoch, linestyle="--", color="gray", alpha=0.8
+    #         )
+    #         axs[0].text(
+    #             epoch * iterations_per_epoch + 100,
+    #             max(loss_list),
+    #             f"lr: {lr:.1e}",
+    #             rotation=0,
+    #             verticalalignment="bottom",
+    #         )
 
     # plot training accuracy
     axs[1].plot(
         np.arange(1, len(train_acc) + 1),
         train_acc,
         label="Training Accuracy",
-        color="blue",
-        markersize=6,
-        linewidth=2,
     )
     axs[1].plot(
         np.arange(1, len(valid_acc) + 1),
         valid_acc,
         label="Valid Accuracy",
-        color="red",
-        markersize=6,
-        linewidth=2,
     )
     axs[1].xlim = (0, num_epochs + 1)
     axs[1].set_xlabel("Epoch")
     axs[1].set_ylabel("Accuracy (%)")
-    axs[1].set_title(f"Accuracy on {model_name}", fontsize=14, pad=15)
+    axs[1].set_title(f"Accuracy on {model_name}")
     axs[1].legend(loc="best")
     axs[1].grid(True)
+
+    # for epoch, lr in enumerate(learning_rates):
+    #     if epoch == 0 or lr != learning_rates[epoch - 1]:
+    #         axs[1].axvline(x=epoch, linestyle="--", color="gray", alpha=0.8)
+    #         axs[1].text(
+    #             epoch + 0.2,
+    #             max(train_acc),
+    #             f"lr: {lr:.1e}",
+    #             rotation=0,
+    #             verticalalignment="bottom",
+    #         )
 
     fig.savefig(f"{model_name}_training_performance.svg", format="svg")
     fig.show()
 
     plt.figure()
-    plt.plot(train_loss_per_epoch, label="Train Loss")
+    plt.plot(train_loss_per_epoch, label="Training Loss")
     plt.plot(valid_loss_per_epoch, label="Valid Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -759,16 +814,17 @@ def plot_training_metrics(log_dict: dict):
     plt.savefig(f"{model_name}_training_and_validation_loss.svg", format="svg")
     plt.show()
 
-# plot_training_metrics(log_dict)
+
+# plot_training_metrics(log_dict, 20)
 
 
-# In[ ]:
+# In[62]:
 
 
 # def test(model, test_loader, model_name):
 #     with torch.set_grad_enabled(False):
 #         test_eval_res = eval_model(model, test_loader)
-    
+
 #     test_loss = test_eval_res["avg_loss"]
 #     test_acc = test_eval_res["accuracy"]
 #     class_correct = test_eval_res["class_correct"]
@@ -788,7 +844,7 @@ def plot_training_metrics(log_dict: dict):
 #         )
 
 
-# In[ ]:
+# In[63]:
 
 
 def test(model, test_loader, model_name):
@@ -825,7 +881,7 @@ def test(model, test_loader, model_name):
             f.write(line + "\n")
 
 
-# In[ ]:
+# In[64]:
 
 
 def plot_images_with_predictions(model, data_loader, classes, model_name):
@@ -876,27 +932,34 @@ def plot_images_with_predictions(model, data_loader, classes, model_name):
     plt.show()
 
 
-# In[ ]:
+# In[65]:
 
 
 def train_all_resnet_models():
     resnet_models = {
-        "ResNet18": (ResNet18(num_classes=10).to(device), 50, 0.1, 10),
-        "ResNet34": (ResNet34(num_classes=10).to(device), 50, 0.1, 10),
-        "ResNet50": (ResNet50(num_classes=10).to(device), 100, 0.1, 30),
-        "ResNet101": (ResNet101(num_classes=10).to(device), 100, 0.1, 30),
-        "ResNet152": (ResNet152(num_classes=10).to(device), 100, 0.1, 30),
+        "ResNet18": (ResNet18(num_classes=10).to(device), 100, 0.1),
+        "ResNet34": (ResNet34(num_classes=10).to(device), 100, 0.1),
+        "ResNet50": (ResNet50(num_classes=10).to(device), 100, 0.01),
+        "ResNet101": (ResNet101(num_classes=10).to(device), 100, 0.01),
+        "ResNet152": (ResNet152(num_classes=10).to(device), 100, 0.01),
     }
 
-    for model_name, (model, num_epochs, initial_lr, step_size) in resnet_models.items():
+    for model_name, (model, num_epochs, initial_lr) in resnet_models.items():
         print(
             f"Training {model_name} for {num_epochs} epochs with initial learning rate {initial_lr}..."
         )
+        # optimizer = optim.SGD(
+        #     model.parameters(), lr=initial_lr, momentum=0.9, weight_decay=5e-4
+        # )
+        # loss_fn = nn.CrossEntropyLoss()
+        # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=0.1)
         optimizer = optim.SGD(
             model.parameters(), lr=initial_lr, momentum=0.9, weight_decay=5e-4
         )
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.5, patience=6, verbose=True
+        )
         loss_fn = nn.CrossEntropyLoss()
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=0.1)
         log_dict = train(
             model,
             train_loader,
@@ -910,7 +973,7 @@ def train_all_resnet_models():
         model.load_state_dict(torch.load(f"{model_name}_cifar.pt"))
         plot_training_metrics(log_dict, num_epochs)
         test(model, test_loader, model_name)
-        plot_images_with_predictions(model, test_loader, classes, model_name)
+        # plot_images_with_predictions(model, test_loader, classes, model_name)
 
 
 # 开始训练所有模型
