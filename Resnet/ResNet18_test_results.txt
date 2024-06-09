@@ -1,14 +1,14 @@
 Model: ResNet18
-Test Loss: 1.5919
-Test Accuracy (Overall): 42.61%
+Test Loss: 0.2351
+Test Accuracy (Overall): 93.91%
 
-Test Accuracy of Airplane: 32% (327/1000)
-Test Accuracy of      Car: 59% (595/1000)
-Test Accuracy of     Bird: 20% (202/1000)
-Test Accuracy of      Cat: 23% (232/1000)
-Test Accuracy of     Deer: 20% (204/1000)
-Test Accuracy of      Dog: 38% (388/1000)
-Test Accuracy of     Frog: 40% (404/1000)
-Test Accuracy of    Horse: 56% (569/1000)
-Test Accuracy of     Ship: 78% (785/1000)
-Test Accuracy of    Truck: 55% (555/1000)
+Test Accuracy of Airplane: 94% (944/1000)
+Test Accuracy of      Car: 97% (974/1000)
+Test Accuracy of     Bird: 90% (909/1000)
+Test Accuracy of      Cat: 87% (878/1000)
+Test Accuracy of     Deer: 95% (950/1000)
+Test Accuracy of      Dog: 88% (886/1000)
+Test Accuracy of     Frog: 96% (962/1000)
+Test Accuracy of    Horse: 96% (964/1000)
+Test Accuracy of     Ship: 96% (966/1000)
+Test Accuracy of    Truck: 95% (958/1000)

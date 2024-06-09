@@ -1,0 +1,14 @@
+Model: ResNet152
+Test Loss: 0.2346
+Test Accuracy (Overall): 93.17%
+
+Test Accuracy of Airplane: 95% (952/1000)
+Test Accuracy of      Car: 97% (979/1000)
+Test Accuracy of     Bird: 90% (902/1000)
+Test Accuracy of      Cat: 85% (856/1000)
+Test Accuracy of     Deer: 94% (942/1000)
+Test Accuracy of      Dog: 88% (884/1000)
+Test Accuracy of     Frog: 94% (941/1000)
+Test Accuracy of    Horse: 96% (960/1000)
+Test Accuracy of     Ship: 95% (956/1000)
+Test Accuracy of    Truck: 94% (945/1000)

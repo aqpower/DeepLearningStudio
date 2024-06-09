@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[23]:
 
 
 import time
@@ -22,7 +22,7 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
 
-# In[ ]:
+# In[24]:
 
 
 # 设置随机种子以确保结果可复现
@@ -44,7 +44,7 @@ set_random_seed(seed)
 batch_size = 128
 
 learning_rate = 0.1
-num_epochs = 30
+num_epochs = 100
 num_classes = 10
 
 # the percentage of the training dataset to use as validation dataset
@@ -96,7 +96,7 @@ classes = (
 # ```
 # 
 
-# In[ ]:
+# In[25]:
 
 
 def conv3x3(in_channels, out_channels, stride=1):
@@ -213,7 +213,7 @@ print(out.shape)
 # ```
 # 
 
-# In[ ]:
+# In[26]:
 
 
 class Bottleneck(nn.Module):
@@ -295,7 +295,7 @@ class Bottleneck(nn.Module):
         return out
 
 
-# In[ ]:
+# In[27]:
 
 
 class ResNet(nn.Module):
@@ -331,7 +331,7 @@ class ResNet(nn.Module):
         # 考虑到CIFAR10数据集的图片尺寸太小，ResNet18网络的7x7降采样卷积和池化操作容易丢失一部分信息
         # 所以在实验中我们将7x7的降采样层和最大池化层去掉，替换为一个3x3的降采样卷积，同时减小该卷积层的步长和填充大小，
         # 这样可以尽可能保留原始图像的信息。
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -394,7 +394,7 @@ class ResNet(nn.Module):
         return x
 
 
-# In[ ]:
+# In[28]:
 
 
 def ResNet18(num_classes: int = 10) -> ResNet:
@@ -413,7 +413,7 @@ def ResNet18(num_classes: int = 10) -> ResNet:
 # summary(ResNet18(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[29]:
 
 
 def ResNet34(num_classes: int = 10) -> ResNet:
@@ -432,7 +432,7 @@ def ResNet34(num_classes: int = 10) -> ResNet:
 # summary(ResNet34(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[30]:
 
 
 def ResNet50(num_classes: int = 10) -> ResNet:
@@ -451,7 +451,7 @@ def ResNet50(num_classes: int = 10) -> ResNet:
 # summary(ResNet50(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[31]:
 
 
 def ResNet101(num_classes: int = 10) -> ResNet:
@@ -470,7 +470,7 @@ def ResNet101(num_classes: int = 10) -> ResNet:
 # summary(ResNet101(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[32]:
 
 
 def ResNet152(num_classes: int = 10) -> ResNet:
@@ -488,7 +488,7 @@ def ResNet152(num_classes: int = 10) -> ResNet:
 # summary(ResNet152(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[ ]:
+# In[33]:
 
 
 from cutout import Cutout
@@ -552,7 +552,7 @@ test_loader = DataLoader(
 )
 
 
-# In[ ]:
+# In[34]:
 
 
 # Checking the dataset size
@@ -569,7 +569,7 @@ check_dataset(valid_loader, "Valid")
 check_dataset(test_loader, "Testing")
 
 
-# In[ ]:
+# In[35]:
 
 
 def eval_model(model, data_loader):
@@ -612,7 +612,7 @@ def eval_model(model, data_loader):
     }
 
 
-# In[ ]:
+# In[36]:
 
 
 # train model
@@ -643,7 +643,9 @@ def train(
         print(
             f"Epoch: {epoch+1:03d}/{num_epochs:03d} | Current Learning Rate: {current_lr:.6f}"
         )
-
+        ###################
+        # 训练 #
+        ###################
         model.train()
         for batch_idx, (features, targets) in enumerate(train_loader, 0):
             features = features.to(device)
@@ -665,6 +667,9 @@ def train(
                 )
 
         # each epoch, evaluate the model
+        ######################
+        # 验证 #
+        ######################
         model.eval()
         with torch.set_grad_enabled(False):
             train_eval_res = eval_model(model, train_loader)
@@ -723,13 +728,13 @@ def train(
 # )
 
 
-# In[ ]:
+# In[37]:
 
 
 # model.load_state_dict(torch.load("model_cifar.pt"))
 
 
-# In[ ]:
+# In[38]:
 
 
 def plot_training_metrics(log_dict: dict, num_epochs: int):
@@ -743,13 +748,13 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 
     running_avg_loss = np.convolve(loss_list, np.ones(200) / 200, mode="valid")
 
-    fig, axs = plt.subplots(1, 2)
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 
     axs[0].plot(train_loss_per_epoch, label="Training Loss")
     axs[0].plot(valid_loss_per_epoch, label="Valid Loss")
     axs[0].set_xlabel("Epoch")
     axs[0].set_ylabel("Loss")
-    axs[0].set_title(f"Training and Validation Loss on {model_name}")
+    axs[0].set_title(f"Loss on {model_name}")
     axs[0].legend(loc='best')
     axs[0].grid(True)
 
@@ -804,7 +809,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
     plt.plot(loss_list, label="Minibatch Loss")
     plt.plot(running_avg_loss, label="Running Average Loss", linewidth=2)
     plt.xlabel("Iteration")
-    plt.ylabel("Cross Entropy Loss")
+    plt.ylabel("Loss")
     plt.title(f"Training Loss on {model_name}")
     plt.legend(loc="best")
     plt.grid(True)
@@ -817,7 +822,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 # plot_training_metrics(log_dict, 20)
 
 
-# In[ ]:
+# In[39]:
 
 
 # def test(model, test_loader, model_name):
@@ -843,7 +848,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 #         )
 
 
-# In[ ]:
+# In[40]:
 
 
 def test(model, test_loader, model_name):
@@ -880,7 +885,7 @@ def test(model, test_loader, model_name):
             f.write(line + "\n")
 
 
-# In[ ]:
+# In[41]:
 
 
 def plot_images_with_predictions(model, data_loader, classes, model_name):
@@ -931,11 +936,13 @@ def plot_images_with_predictions(model, data_loader, classes, model_name):
     plt.show()
 
 
-# In[ ]:
+# In[42]:
 
 
 def plot_resnet_compare(log_dicts):
-    fig, axs = plt.subplots(1, 2)
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    color_list = ["#6495ED", "#4EEE94", "#EEC900", "#FF6347", "#BA55D3"]
+    ind_color = 0
     for log_dict in log_dicts:
         loss_list = log_dict["train_loss_per_batch"]
         train_acc = log_dict["train_acc_per_epoch"]
@@ -944,42 +951,63 @@ def plot_resnet_compare(log_dicts):
         model_name = log_dict["model_name"]
         train_loss_per_epoch = log_dict["train_loss_per_epoch"]
         valid_loss_per_epoch = log_dict["valid_loss_per_epoch"]
-        axs[0].scatter(
+        # axs[0].scatter(
+        #     np.arange(1, len(valid_loss_per_epoch) + 1),
+        #     valid_loss_per_epoch,
+        #     label=f"{model_name}",
+        #     s=20,
+        #     color=next(color),
+        # )
+        axs[0].plot(
             np.arange(1, len(valid_loss_per_epoch) + 1),
             valid_loss_per_epoch,
-            label=f"{model_name} Valid Loss",
+            ".--",
+            color=color_list[ind_color],
+            label=f"{model_name}",
         )
-        axs[1].scatter(
+        # axs[1].scatter(
+        #     np.arange(1, len(valid_acc) + 1),
+        #     valid_acc,
+        #     label=f"{model_name}",
+        #     s=20,
+        #     color=next(color),
+        # )
+        axs[1].plot(
             np.arange(1, len(valid_acc) + 1),
             valid_acc,
-            label=f"{model_name} Valid Accuracy",
+            ".--",
+            color=color_list[ind_color],
+            label=f"{model_name}",
         )
+        ind_color += 1
 
     axs[0].set_xlabel("Epoch")
     axs[0].set_ylabel("Validation Loss")
-    axs[0].set_title(f"CIFAR10 Validation Loss on ResNet Models")
+    axs[0].set_title(f"CIFAR10 Validation Loss")
     axs[1].set_xlabel("Epoch")
-    axs[1].set_ylabel("Validation Accuracy (%)")
-    axs[1].set_title(f"CIFAR10 Accuracy on ResNet Models")
+    axs[1].set_ylabel("Accuracy (%)")
+    axs[1].set_title(f"CIFAR10 Validation Accuracy")
     axs[0].legend(loc="best")
     axs[1].legend(loc="best")
     axs[0].grid(True)
-    axs[0].grid(True)
+    axs[1].grid(True)
     fig.savefig("Resnet_training_performance.svg", format="svg")
     fig.show()
 
 
-# In[ ]:
+# In[43]:
 
 
 def train_all_resnet_models():
     resnet_models = {
-        "ResNet18": (ResNet18(num_classes=10).to(device), 100, 0.1),
-        "ResNet34": (ResNet34(num_classes=10).to(device), 100, 0.1),
-        "ResNet50": (ResNet50(num_classes=10).to(device), 100, 0.01),
-        "ResNet101": (ResNet101(num_classes=10).to(device), 100, 0.01),
-        # "ResNet152": (ResNet152(num_classes=10).to(device), 100, 0.01),
+        "ResNet18": (ResNet18(num_classes=10).to(device), 130, 0.1),
+        "ResNet34": (ResNet34(num_classes=10).to(device), 130, 0.1),
+        "ResNet50": (ResNet50(num_classes=10).to(device), 130, 0.1),
+        "ResNet101": (ResNet101(num_classes=10).to(device), 130, 0.1),
+        "ResNet152": (ResNet152(num_classes=10).to(device), 130, 0.1),
     }
+    
+    
     
     log_dicts = []
 
