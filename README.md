@@ -5,8 +5,8 @@ I am a student learning deep learning now, and this is what i do for learning de
 DeepLearningStudio is a repository created to document and share various deep learning experiments and models.
 
 and here is my favirite quote used on deep learning:
-> * entia non sunt multiplicanda praeter necessitatem *
-> * 如无必要，勿增实体 *
+> *entia non sunt multiplicanda praeter necessitatem*
+> *如无必要，勿增实体*
 
 ## Content
 - **Single Layer Perceptron**
