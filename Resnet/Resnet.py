@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[23]:
+# In[35]:
 
 
 import time
@@ -22,32 +22,15 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
 
-# In[24]:
+# In[36]:
 
 
-# 设置随机种子以确保结果可复现
-def set_random_seed(seed):
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
-
-# 在每次训练前设置随机种子
-seed = 89  # 可以每次更改这个值
-set_random_seed(seed)
-
-# Mini-Batch Gradient Descent
 batch_size = 128
 
 learning_rate = 0.1
 num_epochs = 100
 num_classes = 10
 
-# the percentage of the training dataset to use as validation dataset
 valid_percentage = 0.2
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -96,57 +79,31 @@ classes = (
 # ```
 # 
 
-# In[25]:
+# In[37]:
 
 
 def conv3x3(in_channels, out_channels, stride=1):
-    # 二维卷积层
-    # in_channels：输入特征图的通道数。例如，对于RGB图像，in_channels为3。
-    # out_channels：输出特征图的通道数。这个值决定了卷积核的数量，即我们希望提取多少个特征。
-    # kernel_size：卷积核的大小，可以是一个整数或一个元组。例如，kernel_size=3表示使用3x3的卷积核。
-    # stride：卷积核的步幅，决定卷积核在输入特征图上移动的步长。默认值为1。
-    # padding：填充方式，为了保持特征图的尺寸，可以在输入特征图的边缘填充0。padding=1表示在所有边缘填充1个像素。
-    # bias：是否添加偏置项。默认值为True。这里不使用偏置项（bias=False），因为后面有批量归一化层。
     return nn.Conv2d(
         in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False
     )
 
 
 class BasicBlock(nn.Module):
-    """
-    A basic residual block for ResNet.
-
-    Attributes:
-        conv1: First convolutional layer.
-        bn1: Batch normalization for the first convolutional layer.
-        conv2: Second convolutional layer.
-        bn2: Batch normalization for the second convolutional layer.
-        shortcut: Shortcut connection to match input and output dimensions.
-    """
-
     expansion: int = (
         1  # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
     )
 
     def __init__(self, in_channels, out_channels, stride=1):
-        """
-        Initializes the basic block.
-
-        Args:
-            in_channels: Number of input channels.
-            out_channels: Number of output channels.
-            stride: Stride for the convolution. Default is 1.
-        """
         super(BasicBlock, self).__init__()
 
         self.conv1 = conv3x3(in_channels, out_channels, stride)
-        # 对卷积层的输出进行归一化处理。这有助于加速训练并稳定模型。
+        # 批量规范化层,对卷积层的输出进行归一化处理。这有助于加速训练并稳定模型。
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.conv2 = conv3x3(out_channels, out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
         self.shortcut = nn.Sequential()
-        # 在残差块中，如果输入和输出的形状不一致（例如通道数不同或步幅不为1），我们需要通过一个卷积层来调整输入的形状，使其与输出形状一致。
+        # 在残差块中，如果输入和输出的形状不一致（例如通道数不同或步幅不为1),需要通过一个卷积层来调整输入的形状，使其与输出形状一致。
         if stride != 1 or in_channels != out_channels:
             # 如果需要，则定义一个包含1x1卷积层和批量归一化层的顺序容器。
             self.shortcut = nn.Sequential(
@@ -156,16 +113,7 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(out_channels),
             )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Defines the computation performed at every call.
-
-        Args:
-            x: Input tensor.
-
-        Returns:
-            Output tensor.
-        """
+    def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         out += self.shortcut(x)
@@ -173,12 +121,49 @@ class BasicBlock(nn.Module):
         return out
 
 
-# Example usage
-# Define an input tensor with shape (batch_size, in_channels, height, width)
 x = torch.randn(1, 64, 32, 32)
-# Create a basic block instance
 block = BasicBlock(64, 64)
-# Forward pass
+out = block(x)
+print(out.shape)
+
+
+# In[38]:
+
+
+class BasicBlockWithOutShortcut(nn.Module):
+    expansion: int = (
+        1  # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
+    )
+
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(BasicBlockWithOutShortcut, self).__init__()
+
+        self.conv1 = conv3x3(in_channels, out_channels, stride)
+        # 批量规范化层,对卷积层的输出进行归一化处理。这有助于加速训练并稳定模型。
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.conv2 = conv3x3(out_channels, out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        self.shortcut = nn.Sequential()
+        # 在残差块中，如果输入和输出的形状不一致（例如通道数不同或步幅不为1),需要通过一个卷积层来调整输入的形状，使其与输出形状一致。
+        if stride != 1 or in_channels != out_channels:
+            # 如果需要，则定义一个包含1x1卷积层和批量归一化层的顺序容器。
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(
+                    in_channels, out_channels, kernel_size=1, stride=stride, bias=False
+                ),
+                nn.BatchNorm2d(out_channels),
+            )
+
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        # out += self.shortcut(x)
+        out = F.relu(out)
+        return out
+
+x = torch.randn(1, 64, 32, 32)
+block = BasicBlock(64, 64)
 out = block(x)
 print(out.shape)
 
@@ -213,34 +198,19 @@ print(out.shape)
 # ```
 # 
 
-# In[26]:
+# In[39]:
+
+
+def conv1x1(in_channels, out_channels, stride=1):
+    return nn.Conv2d(
+        in_channels, out_channels, kernel_size=1, stride=stride, padding=1, bias=False
+    )
 
 
 class Bottleneck(nn.Module):
-    """
-    A bottleneck residual block for ResNet.
-
-    Attributes:
-        conv1: First convolutional layer (1x1).
-        bn1: Batch normalization for the first convolutional layer.
-        conv2: Second convolutional layer (3x3).
-        bn2: Batch normalization for the second convolutional layer.
-        conv3: Third convolutional layer (1x1).
-        bn3: Batch normalization for the third convolutional layer.
-        shortcut: Shortcut connection to match input and output dimensions.
-    """
-
     expansion: int = 4
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int = 1) -> None:
-        """
-        Initializes the bottleneck block.
-
-        Args:
-            in_channels: Number of input channels.
-            out_channels: Number of output channels.
-            stride: Stride for the convolution. Default is 1.
-        """
+    def __init__(self, in_channels, out_channels, stride=1):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(
             in_channels, out_channels, kernel_size=1, stride=1, bias=False
@@ -278,15 +248,6 @@ class Bottleneck(nn.Module):
             )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Defines the computation performed at every call.
-
-        Args:
-            x: Input tensor.
-
-        Returns:
-            Output tensor.
-        """
         out = F.relu(self.bn1(self.conv1(x)))
         out = F.relu(self.bn2(self.conv2(out)))
         out = self.bn3(self.conv3(out))
@@ -295,73 +256,29 @@ class Bottleneck(nn.Module):
         return out
 
 
-# In[27]:
+# In[40]:
 
 
 class ResNet(nn.Module):
-    """
-    A ResNet model.
-
-    Attributes:
-        in_channels: Number of input channels.
-        conv1: Initial convolutional layer.
-        bn1: Batch normalization for the initial convolutional layer.
-        maxpool: Max pooling layer.
-        layer1: First layer of residual blocks.
-        layer2: Second layer of residual blocks.
-        layer3: Third layer of residual blocks.
-        layer4: Fourth layer of residual blocks.
-        avgpool: Global average pooling layer.
-        fc: Fully connected layer.
-    """
-
-    def __init__(
-        self, block: type[BasicBlock], num_blocks: list[int], num_classes: int = 1000
-    ) -> None:
-        """
-        Initializes the ResNet model.
-
-        Args:
-            block: A residual block.
-            num_blocks: A list containing the number of blocks in each layer.
-            num_classes: Number of output classes. Default is 1000.
-        """
+    def __init__(self, block, num_blocks, num_classes=1000):
         super(ResNet, self).__init__()
         self.in_channels = 64
         # 考虑到CIFAR10数据集的图片尺寸太小，ResNet18网络的7x7降采样卷积和池化操作容易丢失一部分信息
         # 所以在实验中我们将7x7的降采样层和最大池化层去掉，替换为一个3x3的降采样卷积，同时减小该卷积层的步长和填充大小，
         # 这样可以尽可能保留原始图像的信息。
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = conv3x3(3, 64)
         self.bn1 = nn.BatchNorm2d(64)
         # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
-        # self.fc = nn.Sequential(
-            # nn.Dropout(0.5), nn.Linear(512 * block.expansion, num_classes)
-        # )
-        # self.dropout = nn.Dropout(p=0.5)
 
     def _make_layer(
-        self, block: type[BasicBlock], out_channels: int, num_blocks: int, stride: int
+        self, block, out_channels, num_blocks, stride
     ) -> nn.Sequential:
-        """
-        Creates a layer of residual blocks.
-
-        Args:
-            block: A residual block.
-            out_channels: Number of output channels.
-            num_blocks: Number of blocks in the layer.
-            stride: Stride for the first block.
-
-        Returns:
-            A sequential container of residual blocks.
-        """
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
@@ -370,15 +287,6 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Defines the computation performed at every call.
-
-        Args:
-            x: Input tensor.
-
-        Returns:
-            Output tensor.
-        """
         x = F.relu(self.bn1(self.conv1(x)))
         # x = self.maxpool(x)
 
@@ -390,110 +298,74 @@ class ResNet(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
-        # x = self.dropout(x)
         return x
 
 
-# In[28]:
+# In[41]:
 
 
-def ResNet18(num_classes: int = 10) -> ResNet:
-    """
-    Constructs a ResNet-18 model.
+def Resnet18WithoutShortcut(num_classes):
+    return ResNet(BasicBlockWithOutShortcut, [2, 2, 2, 2], num_classes)
 
-    Args:
-        num_classes: Number of output classes. Default is 1000.
+model = Resnet18WithoutShortcut(10)
 
-    Returns:
-        A ResNet-18 model.
-    """
+# summary(Resnet18WithoutShortcut(num_classes), (1, 3, 32, 32))
+
+
+# In[42]:
+
+
+def ResNet18(num_classes):
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes)
 
 
 # summary(ResNet18(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[29]:
+# In[43]:
 
 
-def ResNet34(num_classes: int = 10) -> ResNet:
-    """
-    Constructs a ResNet-34 model.
-
-    Args:
-        num_classes: Number of output classes. Default is 1000.
-
-    Returns:
-        A ResNet-34 model.
-    """
+def ResNet34(num_classes):
     return ResNet(BasicBlock, [3, 4, 6, 3], num_classes)
 
 
 # summary(ResNet34(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[30]:
+# In[44]:
 
 
-def ResNet50(num_classes: int = 10) -> ResNet:
-    """
-    Constructs a ResNet-50 model.
-
-    Args:
-        num_classes: Number of output classes. Default is 1000.
-
-    Returns:
-        A ResNet-50 model.
-    """
+def ResNet50(num_classes):
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes)
 
 
 # summary(ResNet50(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[31]:
+# In[45]:
 
 
-def ResNet101(num_classes: int = 10) -> ResNet:
-    """
-    Constructs a ResNet-101 model.
-
-    Args:
-        num_classes: Number of output classes. Default is 1000.
-
-    Returns:
-        A ResNet-101 model.
-    """
+def ResNet101(num_classes):
     return ResNet(Bottleneck, [3, 4, 23, 3], num_classes)
 
 
 # summary(ResNet101(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[32]:
+# In[46]:
 
 
-def ResNet152(num_classes: int = 10) -> ResNet:
-    """
-    Constructs a ResNet-152 model.
-
-    Args:
-        num_classes: Number of output classes. Default is 1000.
-
-    Returns:
-        A ResNet-152 model.
-    """
+def ResNet152(num_classes):
     return ResNet(Bottleneck, [3, 8, 36, 3], num_classes)
+
 
 # summary(ResNet152(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[33]:
+# In[47]:
 
 
-from cutout import Cutout
-
-# 数据增强变换
+# 数据增强变换，用于训练集
 transform_train = transforms.Compose(
     [
         transforms.RandomCrop(32, padding=4),  # 随机裁剪，填充4个像素
@@ -509,7 +381,7 @@ transform_train = transforms.Compose(
     ]
 )
 
-# 验证集和测试集变换（不进行数据增强）
+# 用于验证集和测试集的变换
 transform_test = transforms.Compose(
     [
         transforms.ToTensor(),  # 转为Tensor
@@ -519,43 +391,33 @@ transform_test = transforms.Compose(
     ]
 )
 
-# 将数据转换为torch.FloatTensor，并标准化。
 train_data = CIFAR10("../data", train=True, download=True, transform=transform_train)
 valid_data = CIFAR10("../data", train=True, download=True, transform=transform_test)
 test_data = CIFAR10("../data", train=False, download=True, transform=transform_test)
 
 
-# obtain training indices that will be used for validation
 num_train = len(train_data)
 indices = list(range(num_train))
-# random indices
 np.random.shuffle(indices)
-# the ratio of split
 split = int(np.floor(valid_percentage * num_train))
-# divide data to radin_data and valid_data
 train_idx, valid_idx = indices[split:], indices[:split]
 
-# define samplers for obtaining training and validation batches
 # 无放回地按照给定的索引列表采样样本元素
 train_sampler = SubsetRandomSampler(train_idx)
 valid_sampler = SubsetRandomSampler(valid_idx)
 
-# prepare data loaders (combine dataset and sampler)
 train_loader = DataLoader(
     train_data, batch_size=batch_size, sampler=train_sampler, num_workers=2
 )
 valid_loader = DataLoader(
     valid_data, batch_size=batch_size, sampler=valid_sampler, num_workers=2
 )
-test_loader = DataLoader(
-    test_data, batch_size=batch_size, num_workers=2
-)
+test_loader = DataLoader(test_data, batch_size=batch_size, num_workers=2)
 
 
-# In[34]:
+# In[48]:
 
 
-# Checking the dataset size
 def check_dataset(loader, set_name):
     print(f"{set_name} Set:")
     images, labels = next(iter(loader))
@@ -569,7 +431,7 @@ check_dataset(valid_loader, "Valid")
 check_dataset(test_loader, "Testing")
 
 
-# In[35]:
+# In[49]:
 
 
 def eval_model(model, data_loader):
@@ -612,7 +474,7 @@ def eval_model(model, data_loader):
     }
 
 
-# In[36]:
+# In[50]:
 
 
 # train model
@@ -653,11 +515,13 @@ def train(
 
             # step1: predict the output
             outputs = model(features)
-            loss = loss_fn(outputs, targets)
 
-            # step2: update model
+            # step2: loss backpropagation
+            loss = loss_fn(outputs, targets)
             optimizer.zero_grad()
             loss.backward()
+            
+            # step3: update model parameters
             optimizer.step()
 
             log_dict["train_loss_per_batch"].append(loss.item())
@@ -666,7 +530,7 @@ def train(
                     f"Epoch: {epoch+1:03d}/{num_epochs:03d} | Batch {batch_idx:04d}/{len(train_loader):04d} | Loss: {loss:.4f}"
                 )
 
-        # each epoch, evaluate the model
+        #! each epoch, evaluate the model
         ######################
         # 验证 #
         ######################
@@ -728,13 +592,13 @@ def train(
 # )
 
 
-# In[37]:
+# In[51]:
 
 
 # model.load_state_dict(torch.load("model_cifar.pt"))
 
 
-# In[38]:
+# In[52]:
 
 
 def plot_training_metrics(log_dict: dict, num_epochs: int):
@@ -755,7 +619,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
     axs[0].set_xlabel("Epoch")
     axs[0].set_ylabel("Loss")
     axs[0].set_title(f"Loss on {model_name}")
-    axs[0].legend(loc='best')
+    axs[0].legend(loc="best")
     axs[0].grid(True)
 
     # 标记学习率变化
@@ -822,7 +686,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 # plot_training_metrics(log_dict, 20)
 
 
-# In[39]:
+# In[53]:
 
 
 # def test(model, test_loader, model_name):
@@ -848,7 +712,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 #         )
 
 
-# In[40]:
+# In[54]:
 
 
 def test(model, test_loader, model_name):
@@ -885,7 +749,7 @@ def test(model, test_loader, model_name):
             f.write(line + "\n")
 
 
-# In[41]:
+# In[55]:
 
 
 def plot_images_with_predictions(model, data_loader, classes, model_name):
@@ -936,7 +800,7 @@ def plot_images_with_predictions(model, data_loader, classes, model_name):
     plt.show()
 
 
-# In[42]:
+# In[56]:
 
 
 def plot_resnet_compare(log_dicts):
@@ -995,20 +859,19 @@ def plot_resnet_compare(log_dicts):
     fig.show()
 
 
-# In[43]:
+# In[57]:
 
 
 def train_all_resnet_models():
     resnet_models = {
+        "Resnet18WithoutShortcut": (Resnet18WithoutShortcut(num_classes=10).to(device), 130, 0.1),
         "ResNet18": (ResNet18(num_classes=10).to(device), 130, 0.1),
-        "ResNet34": (ResNet34(num_classes=10).to(device), 130, 0.1),
-        "ResNet50": (ResNet50(num_classes=10).to(device), 130, 0.1),
-        "ResNet101": (ResNet101(num_classes=10).to(device), 130, 0.1),
-        "ResNet152": (ResNet152(num_classes=10).to(device), 130, 0.1),
+        # "ResNet34": (ResNet34(num_classes=10).to(device), 130, 0.1),
+        # "ResNet50": (ResNet50(num_classes=10).to(device), 130, 0.1),
+        # "ResNet101": (ResNet101(num_classes=10).to(device), 130, 0.1),
+        # "ResNet152": (ResNet152(num_classes=10).to(device), 130, 0.01),
     }
-    
-    
-    
+
     log_dicts = []
 
     for model_name, (model, num_epochs, initial_lr) in resnet_models.items():
