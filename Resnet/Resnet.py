@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[35]:
+# In[1]:
 
 
 import time
@@ -22,7 +22,7 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
 
-# In[36]:
+# In[2]:
 
 
 batch_size = 128
@@ -79,7 +79,7 @@ classes = (
 # ```
 # 
 
-# In[37]:
+# In[3]:
 
 
 def conv3x3(in_channels, out_channels, stride=1):
@@ -89,9 +89,8 @@ def conv3x3(in_channels, out_channels, stride=1):
 
 
 class BasicBlock(nn.Module):
-    expansion: int = (
-        1  # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
-    )
+    expansion = 1
+    # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
 
     def __init__(self, in_channels, out_channels, stride=1):
         super(BasicBlock, self).__init__()
@@ -127,13 +126,12 @@ out = block(x)
 print(out.shape)
 
 
-# In[38]:
+# In[4]:
 
 
 class BasicBlockWithOutShortcut(nn.Module):
-    expansion: int = (
-        1  # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
-    )
+    # 输出通道数相对于输入通道数的扩展倍数。对于基本块，扩展倍数为1。
+    expansion = 1
 
     def __init__(self, in_channels, out_channels, stride=1):
         super(BasicBlockWithOutShortcut, self).__init__()
@@ -161,6 +159,7 @@ class BasicBlockWithOutShortcut(nn.Module):
         # out += self.shortcut(x)
         out = F.relu(out)
         return out
+
 
 x = torch.randn(1, 64, 32, 32)
 block = BasicBlock(64, 64)
@@ -198,7 +197,7 @@ print(out.shape)
 # ```
 # 
 
-# In[39]:
+# In[5]:
 
 
 def conv1x1(in_channels, out_channels, stride=1):
@@ -208,7 +207,7 @@ def conv1x1(in_channels, out_channels, stride=1):
 
 
 class Bottleneck(nn.Module):
-    expansion: int = 4
+    expansion = 4
 
     def __init__(self, in_channels, out_channels, stride=1):
         super(Bottleneck, self).__init__()
@@ -247,16 +246,54 @@ class Bottleneck(nn.Module):
                 nn.BatchNorm2d(out_channels * self.expansion),
             )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = F.relu(self.bn2(self.conv2(out)))
         out = self.bn3(self.conv3(out))
+        # out = F.relu(self.shortcut(x) + self.bn3(self.conv3(out)))
         out += self.shortcut(x)
         out = F.relu(out)
         return out
 
 
-# In[40]:
+# In[6]:
+
+
+class BottleneckWithoutShortcut(nn.Module):
+    expansion = 4
+
+    def __init__(self, in_channels, out_channels, stride):
+        super(BottleneckWithoutShortcut, self).__init__()
+        self.conv1 = nn.Conv2d(
+            in_channels, out_channels, kernel_size=1, stride=1, bias=False
+        )
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.conv2 = nn.Conv2d(
+            out_channels,
+            out_channels,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            bias=False,
+        )
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.conv3 = nn.Conv2d(
+            out_channels,
+            out_channels * self.expansion,
+            kernel_size=1,
+            stride=1,
+            bias=False,
+        )
+        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion)
+
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = F.relu(self.bn3(self.conv3(out)))
+        return out
+
+
+# In[7]:
 
 
 class ResNet(nn.Module):
@@ -276,9 +313,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-    def _make_layer(
-        self, block, out_channels, num_blocks, stride
-    ) -> nn.Sequential:
+    def _make_layer(self, block, out_channels, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
@@ -286,7 +321,7 @@ class ResNet(nn.Module):
             self.in_channels = out_channels * block.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
         # x = self.maxpool(x)
 
@@ -301,18 +336,17 @@ class ResNet(nn.Module):
         return x
 
 
-# In[41]:
+# In[8]:
 
 
 def Resnet18WithoutShortcut(num_classes):
     return ResNet(BasicBlockWithOutShortcut, [2, 2, 2, 2], num_classes)
 
-model = Resnet18WithoutShortcut(10)
 
 # summary(Resnet18WithoutShortcut(num_classes), (1, 3, 32, 32))
 
 
-# In[42]:
+# In[9]:
 
 
 def ResNet18(num_classes):
@@ -322,27 +356,38 @@ def ResNet18(num_classes):
 # summary(ResNet18(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[43]:
+# In[10]:
 
 
 def ResNet34(num_classes):
     return ResNet(BasicBlock, [3, 4, 6, 3], num_classes)
 
 
+def Resnet34WithoutShortcut(num_classes):
+    return ResNet(BasicBlockWithOutShortcut, [3, 4, 6, 3], num_classes)
+
+
 # summary(ResNet34(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[44]:
+# In[11]:
 
 
 def ResNet50(num_classes):
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes)
 
 
+def Resnet50WithoutShortcut(num_classes):
+    return ResNet(BottleneckWithoutShortcut, [3, 4, 6, 3], num_classes)
+
+
+# from torchinfo import summary
+
 # summary(ResNet50(num_classes=num_classes), (1, 3, 32, 32))
+# summary(Resnet50WithoutShortcut(10), (1, 3, 32, 32))
 
 
-# In[45]:
+# In[12]:
 
 
 def ResNet101(num_classes):
@@ -352,7 +397,7 @@ def ResNet101(num_classes):
 # summary(ResNet101(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[46]:
+# In[13]:
 
 
 def ResNet152(num_classes):
@@ -362,7 +407,7 @@ def ResNet152(num_classes):
 # summary(ResNet152(num_classes=num_classes), (1, 3, 32, 32))
 
 
-# In[47]:
+# In[14]:
 
 
 # 数据增强变换，用于训练集
@@ -415,7 +460,7 @@ valid_loader = DataLoader(
 test_loader = DataLoader(test_data, batch_size=batch_size, num_workers=2)
 
 
-# In[48]:
+# In[15]:
 
 
 def check_dataset(loader, set_name):
@@ -431,7 +476,7 @@ check_dataset(valid_loader, "Valid")
 check_dataset(test_loader, "Testing")
 
 
-# In[49]:
+# In[16]:
 
 
 def eval_model(model, data_loader):
@@ -474,7 +519,7 @@ def eval_model(model, data_loader):
     }
 
 
-# In[50]:
+# In[17]:
 
 
 # train model
@@ -520,7 +565,7 @@ def train(
             loss = loss_fn(outputs, targets)
             optimizer.zero_grad()
             loss.backward()
-            
+
             # step3: update model parameters
             optimizer.step()
 
@@ -592,13 +637,13 @@ def train(
 # )
 
 
-# In[51]:
+# In[18]:
 
 
 # model.load_state_dict(torch.load("model_cifar.pt"))
 
 
-# In[52]:
+# In[19]:
 
 
 def plot_training_metrics(log_dict: dict, num_epochs: int):
@@ -686,7 +731,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 # plot_training_metrics(log_dict, 20)
 
 
-# In[53]:
+# In[20]:
 
 
 # def test(model, test_loader, model_name):
@@ -712,7 +757,7 @@ def plot_training_metrics(log_dict: dict, num_epochs: int):
 #         )
 
 
-# In[54]:
+# In[21]:
 
 
 def test(model, test_loader, model_name):
@@ -749,7 +794,7 @@ def test(model, test_loader, model_name):
             f.write(line + "\n")
 
 
-# In[55]:
+# In[22]:
 
 
 def plot_images_with_predictions(model, data_loader, classes, model_name):
@@ -800,12 +845,12 @@ def plot_images_with_predictions(model, data_loader, classes, model_name):
     plt.show()
 
 
-# In[56]:
+# In[23]:
 
 
 def plot_resnet_compare(log_dicts):
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-    color_list = ["#6495ED", "#4EEE94", "#EEC900", "#FF6347", "#BA55D3"]
+    color_list = ["#6495ED", "#4EEE94", "#EEC900", "#FF6347", "#BA55D3", "#00808C"]
     ind_color = 0
     for log_dict in log_dicts:
         loss_list = log_dict["train_loss_per_batch"]
@@ -859,15 +904,29 @@ def plot_resnet_compare(log_dicts):
     fig.show()
 
 
-# In[57]:
+# In[24]:
 
 
 def train_all_resnet_models():
     resnet_models = {
-        "Resnet18WithoutShortcut": (Resnet18WithoutShortcut(num_classes=10).to(device), 130, 0.1),
-        "ResNet18": (ResNet18(num_classes=10).to(device), 130, 0.1),
-        # "ResNet34": (ResNet34(num_classes=10).to(device), 130, 0.1),
-        # "ResNet50": (ResNet50(num_classes=10).to(device), 130, 0.1),
+        "Resnet50WithoutShortcut": (
+            Resnet50WithoutShortcut(num_classes=10).to(device),
+            100,
+            0.1,
+        ),
+        "ResNet50": (ResNet50(num_classes=10).to(device), 100, 0.1),
+        "Resnet18WithoutShortcut": (
+            Resnet18WithoutShortcut(num_classes=10).to(device),
+            100,
+            0.1,
+        ),
+        "ResNet18": (ResNet18(num_classes=10).to(device), 100, 0.1),
+        "ResNet34": (ResNet34(num_classes=10).to(device), 100, 0.1),
+        "Resnet34WithoutShortcut": (
+            Resnet34WithoutShortcut(num_classes=10).to(device),
+            100,
+            0.1,
+        ),
         # "ResNet101": (ResNet101(num_classes=10).to(device), 130, 0.1),
         # "ResNet152": (ResNet152(num_classes=10).to(device), 130, 0.01),
     }
