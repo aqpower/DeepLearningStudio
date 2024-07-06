@@ -1,0 +1,3 @@
+[submodule "transformer/poetic_transformer"]
+	path = transformer/poetic_transformer
+	url = https://github.com/aqpower/PoeticTransformer.git
